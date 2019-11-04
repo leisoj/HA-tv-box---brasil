@@ -1,9 +1,19 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
+###################################################################
+###################################################################
+##                                                               ##
+##              INICIANDO A INSTALAÇAO NA SUA TV BOX             ##
+##                                                               ##
+###################################################################
+###################################################################
 set -o errexit  # Exit script when a command exits with non-zero status
 set -o errtrace # Exit on error inside any functions or sub-shells
 set -o nounset  # Exit script on use of an undefined variable
 set -o pipefail # Return exit status of the last command in the pipe that failed
 
+# ==============================================================================
+# GLOBALS
+# ==============================================================================
 readonly HOSTNAME="Hassio"
 readonly HASSIO_INSTALLER="https://raw.githubusercontent.com/home-assistant/hassio-installer/master/hassio_install.sh"
 readonly REQUIREMENTS=(
@@ -19,6 +29,13 @@ readonly REQUIREMENTS=(
   software-properties-common
 )
 
+# ==============================================================================
+# SCRIPT LOGIC
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Ensures the hostname of the Pi is correct.
+# ------------------------------------------------------------------------------
 update_hostname() {
   old_hostname=$(< /etc/hostname)
   if [[ "${old_hostname}" != "${HOSTNAME}" ]]; then
@@ -29,6 +46,9 @@ update_hostname() {
   fi
 }
 
+# ------------------------------------------------------------------------------
+# Installs all required software packages and tools
+# ------------------------------------------------------------------------------
 install_requirements() {
   echo "Updating APT packages list..."
   apt-get install software-properties-common
@@ -38,16 +58,25 @@ install_requirements() {
   apt-get install -y "${REQUIREMENTS[@]}"
 }
 
+# ------------------------------------------------------------------------------
+# Installs the Docker engine
+# ------------------------------------------------------------------------------
 install_docker() {
   echo "Installing Docker..."
   curl -fsSL https://get.docker.com | sh
 }
 
+# ------------------------------------------------------------------------------
+# Installs and starts Hass.io
+# ------------------------------------------------------------------------------
 install_hassio() {
   echo "Installing Hass.io..."
   curl -sL "${HASSIO_INSTALLER}" | bash -s -- -m qemuarm-64
 }
 
+# ------------------------------------------------------------------------------
+# Configure network-manager to disable random MAC-address on Wi-Fi
+# ------------------------------------------------------------------------------
 config_network_manager() {
   {
     echo -e "\n[device]";
@@ -57,29 +86,35 @@ config_network_manager() {
   } >> "/etc/NetworkManager/NetworkManager.conf"
 }
 
+# ==============================================================================
+# RUN LOGIC
+# ------------------------------------------------------------------------------
 main() {
-
+  # Are we root?
   if [[ $EUID -ne 0 ]]; then
-    echo "Você deve acessar como root."
-    echo "Para isto, digite:"
-    echo "su -"
-    echo "e a senha criada. ok!"
+    echo "This script must be run as root."
+    echo "Please try again after running:"
+    echo "  sudo su"
     exit 1
   fi
 
+  # Install ALL THE THINGS!
   update_hostname
   install_requirements
   config_network_manager
   install_docker
   install_hassio
 
+  # Friendly closing message
   ip_addr=$(hostname -I | cut -d ' ' -f1)
-  echo "*******************HOME ASSISTANT BRASIL********************"
-  echo "Tudo OK! Agora você instalou o Home Assistant em sua Tv Box."
-  echo "Agora é só aguardar os 20 minutos do HA. Voce pode ver em:"
-  echo "http://${ip_addr}:8123/"
-  echo "by: Josiel"
-  echo "Fonte: Sites chineses, russos, indianos e a da comunidade HA de Portugal"
+  echo "======================================================================="
+  echo "Esta sendo instalado o Home Assistant."
+  echo "Aguarde os 20 minutos, ok"
+  echo "Deu tudo certo! Parabens!!!"
+  echo "by Josiel, com ajuda do youtube,sites diversos e da comunidade Portuguesa HA"
+  echo "Para acessar va em: http://${ip_addr}:8123/"
+
   exit 0
 }
 main
+
