@@ -2,7 +2,7 @@
 ###################################################################
 ###################################################################
 ##                                                               ##
-##              INICIANDO A INSTALAÇAO NA SUA TV BOX             ##
+## -------------INICIANDO INSTALAÇÃO NA SUA TV BOX-------------- ##
 ##                                                               ##
 ###################################################################
 ###################################################################
@@ -14,7 +14,7 @@ set -o pipefail # Return exit status of the last command in the pipe that failed
 # ==============================================================================
 # GLOBALS
 # ==============================================================================
-readonly HOSTNAME="Hassio"
+readonly HOSTNAME="armhassio"
 readonly HASSIO_INSTALLER="https://raw.githubusercontent.com/home-assistant/hassio-installer/master/hassio_install.sh"
 readonly REQUIREMENTS=(
   apparmor-utils
